@@ -6,7 +6,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Install pnpm globally
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm
 
 # Copy lockfile and package.json for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -32,7 +32,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install pnpm globally
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm
 
 # Copy package files for production install
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -40,13 +40,17 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy Prisma schema and generated client
+# Copy Prisma schema
 COPY prisma ./prisma/
-RUN pnpm --filter @prisma/client generate
+
+# Generate Prisma Client in the runner image
+# Prisma CLI is a devDependency, so we install it globally for this step
+# We use the same version as in package.json (6.19.3)
+RUN npm install -g prisma@6.19.3
+RUN prisma generate
 
 # Copy compiled output from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Copy .env.example as template (NEVER copy .env files)
 COPY .env.example ./
