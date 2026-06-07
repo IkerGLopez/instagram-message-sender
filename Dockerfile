@@ -21,7 +21,7 @@ COPY src ./src/
 COPY .env.example ./
 
 # Generate Prisma client
-RUN pnpm --filter @prisma/client generate
+RUN pnpm prisma generate
 
 # Build TypeScript
 RUN pnpm build
