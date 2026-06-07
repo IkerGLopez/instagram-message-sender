@@ -12,6 +12,11 @@ export async function hmacValidatorMiddleware(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  // Skip signature validation for GET requests (webhook handshake)
+  if (request.method === 'GET') {
+    return;
+  }
+
   const signature = request.headers['x-hub-signature-256'] as string | undefined;
 
   if (!signature) {
