@@ -10,8 +10,8 @@ export const FOLLOW_QUEUE_NAME = 'instagram-follow';
 
 export interface FollowEventJob {
   instagramUserId: string;
-  username: string;
-  followedAt: string;
+  rawPayload: Record<string, unknown>;
+  webhookEventId: string;
 }
 
 export function createFollowQueue(connection: Redis): Queue {

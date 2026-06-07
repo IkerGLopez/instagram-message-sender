@@ -14,7 +14,7 @@ export interface DmDispatchJob {
   code: string;
 }
 
-export function createDmQueue(connection: Redis): Queue {
+export function createDmQueue(connection: Redis) {
   return new Queue(DM_QUEUE_NAME, {
     connection,
     limiter: {
@@ -30,5 +30,5 @@ export function createDmQueue(connection: Redis): Queue {
       removeOnComplete: { age: 3600, count: 100 },
       removeOnFail: { age: 86400 },
     },
-  });
+  } as any);
 }

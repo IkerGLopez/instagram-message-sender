@@ -1,12 +1,12 @@
-import { Worker, Job, Queue } from 'bullmq';
+import { Worker, Queue } from 'bullmq';
 import IORedis from 'ioredis';
 import { PrismaClient } from '@prisma/client';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
-import { WebhookProcessor } from './services/webhook-processor.js';
 import { CodeEngine } from './services/code-engine.js';
 import { DMDispatcher } from './services/dm-dispatcher.js';
-import { buildWelcomeMessage } from './utils/build-message.js';
+import { createFollowQueue, createDmQueue } from './queues/index.js';
+import { processFollowEventJob, processDmDispatchJob } from './queues/job-handlers.js';
 
 // Shared Redis connection
 const redis = new IORedis(env.REDIS_URL, {
@@ -37,19 +37,20 @@ db.$on('error', (e) => {
 const codeEngine = new CodeEngine(db);
 const dmDispatcher = new DMDispatcher();
 
-// Follow queue worker
-const followQueue = new Queue('follow-queue', { connection: redis });
-const dmQueue = new Queue('dm-queue', { connection: redis });
-
-const webhookProcessor = new WebhookProcessor(db, codeEngine, dmQueue);
+// Queue instances
+const followQueue = createFollowQueue(redis);
+const dmQueue = createDmQueue(redis);
 
 // Follow event worker
 const followWorker = new Worker(
-  'follow-queue',
-  async (job: Job) => {
-    logger.info({ jobId: job.id, attempt: job.attemptsMade }, 'Processing follow event');
-    await webhookProcessor.processFollowEvent(job.data);
-  },
+  'instagram-follow',
+  (job) =>
+    processFollowEventJob(job, {
+      prisma: db,
+      redis,
+      codeEngine,
+      dmQueue,
+    }),
   {
     connection: redis,
     concurrency: 5,
@@ -75,28 +76,12 @@ followWorker.on('failed', (job, err) => {
 
 // DM dispatch worker
 const dmWorker = new Worker(
-  'dm-queue',
-  async (job: Job) => {
-    const { discountCodeId, instagramUserId, code } = job.data;
-    logger.info({ jobId: job.id, discountCodeId }, 'Processing DM dispatch');
-
-    const messageText = buildWelcomeMessage(code, env.STORE_BASE_URL);
-    const result = await dmDispatcher.sendWelcomeMessage(instagramUserId, messageText);
-
-    // Update DB with DM sent info
-    await db.discountCode.update({
-      where: { id: discountCodeId },
-      data: {
-        dmSentAt: new Date(),
-        dmMessageId: result.messageId,
-      },
-    });
-
-    logger.info(
-      { discountCodeId, messageId: result.messageId },
-      'DM dispatched successfully',
-    );
-  },
+  'instagram-dm',
+  (job) =>
+    processDmDispatchJob(job, {
+      prisma: db,
+      dmDispatcher,
+    }),
   {
     connection: redis,
     concurrency: 1,
@@ -110,8 +95,9 @@ dmWorker.on('completed', (job) => {
 });
 
 dmWorker.on('failed', (job, err) => {
+  const error = err as Error & { response?: { data: unknown } };
   logger.error(
-    { jobId: job?.id, error: err.message, details: err.response?.data },
+    { jobId: job?.id, error: err.message, details: error.response?.data },
     'DM dispatch failed',
   );
 });
