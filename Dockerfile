@@ -12,7 +12,8 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including dev for build tools)
-RUN pnpm install --frozen-lockfile
+# We must allow prisma scripts to run so the client is generated correctly
+RUN pnpm install --frozen-lockfile --allow-build=@prisma/client --allow-build=@prisma/engines --allow-build=prisma
 
 # Copy source code, prisma schema, and config
 COPY prisma ./prisma/
@@ -38,7 +39,8 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Allow prisma scripts to run for client generation
+RUN pnpm install --frozen-lockfile --prod --allow-build=@prisma/client --allow-build=@prisma/engines --allow-build=prisma
 
 # Copy Prisma schema and generated client
 COPY prisma ./prisma/
