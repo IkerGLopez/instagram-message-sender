@@ -11,10 +11,7 @@ services:
           name: instagram-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: instagram-redis
-          property: connectionString
+        sync: false
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -36,10 +33,7 @@ services:
           name: instagram-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: instagram-redis
-          property: connectionString
+        sync: false
       - key: NODE_ENV
         value: production
       # Mismos secretos de Instagram que el servidor
