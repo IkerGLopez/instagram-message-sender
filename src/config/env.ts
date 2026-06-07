@@ -21,7 +21,7 @@ const envSchema = z.object({
   STORE_BASE_URL: z.string().url(),
 
   // Environment
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   PORT: z.coerce.number().int().positive().default(3000),
 });

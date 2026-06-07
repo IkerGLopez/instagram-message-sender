@@ -41,6 +41,8 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.6",
     "@types/node": "^22.10.0",
     "@types/supertest": "^6.0.2",
     "@vitest/coverage-v8": "^3.0.0",

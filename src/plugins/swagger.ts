@@ -14,11 +14,13 @@ export const swaggerPlugin = fp(async (app: FastifyInstance) => {
   if (process.env.NODE_ENV === 'production') return;
 
   await app.register(swagger, {
-    openapi: '3.0.0',
-    info: {
-      title: 'Instagram Message Sender API',
-      version: '0.1.0',
-      description: 'Instagram Client Retention System — automates discount code generation and DM dispatch for new followers',
+    openapi: {
+      openapi: '3.0.3',
+      info: {
+        title: 'Instagram Message Sender API',
+        version: '0.1.0',
+        description: 'Instagram Client Retention System — automates discount code generation and DM dispatch for new followers',
+      },
     },
   });
 
