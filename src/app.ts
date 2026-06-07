@@ -9,6 +9,7 @@ import { swaggerPlugin } from './plugins/swagger.js';
 import { registerErrorHandler } from './middleware/error-handler.js';
 import { instagramWebhookRoutes } from './routes/webhooks/instagram.js';
 import { codesRoutes } from './routes/api/codes.js';
+import { legalRoutes } from './routes/legal.js';
 import { healthRoute } from './health/health.js';
 import { apiKeyAuthMiddleware } from './middleware/api-key-auth.js';
 import { hmacValidatorMiddleware } from './middleware/hmac-validator.js';
@@ -102,6 +103,9 @@ export async function buildApp() {
 
   // Health endpoint (no auth, no rate limit)
   await healthRoute(app);
+
+  // Legal pages (no auth, no rate limit)
+  await legalRoutes(app);
 
   // Global error handler
   registerErrorHandler(app);
