@@ -5,6 +5,7 @@ import cors from '@fastify/cors';
 import { prismaPlugin } from './plugins/prisma.js';
 import { redisPlugin } from './plugins/redis.js';
 import { bullmqPlugin } from './plugins/bullmq.js';
+import { swaggerPlugin } from './plugins/swagger.js';
 import { registerErrorHandler } from './middleware/error-handler.js';
 import { instagramWebhookRoutes } from './routes/webhooks/instagram.js';
 import { codesRoutes } from './routes/api/codes.js';
@@ -28,6 +29,9 @@ export async function buildApp() {
   await app.register(prismaPlugin);
   await app.register(redisPlugin);
   await app.register(bullmqPlugin);
+
+  // Swagger API docs (dev-only — skipped in production)
+  await app.register(swaggerPlugin);
 
   // Security headers
   await app.register(helmet, {
