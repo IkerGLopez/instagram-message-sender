@@ -25,11 +25,11 @@ const db = new PrismaClient({
   ],
 });
 
-db.$on('query', (e) => {
+db.$on('query', (e: { duration: number }) => {
   logger.trace({ duration: e.duration }, 'Prisma query');
 });
 
-db.$on('error', (e) => {
+db.$on('error', (e: Error) => {
   logger.error({ error: e }, 'Prisma error');
 });
 
