@@ -6,7 +6,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 # Copy lockfile and package.json for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -32,7 +32,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 # Copy package files for production install
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
