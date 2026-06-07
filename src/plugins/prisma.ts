@@ -12,11 +12,11 @@ export const prismaPlugin = fp(async function prismaPlugin(app: FastifyInstance)
   });
 
   // Forward Prisma logs to Pino
-  prisma.$on('query', (e) => {
+  prisma.$on('query', (e: { duration: number; query: string }) => {
     logger.trace({ duration: e.duration, query: e.query }, 'Prisma query');
   });
 
-  prisma.$on('error', (e) => {
+  prisma.$on('error', (e: Error) => {
     logger.error({ error: e }, 'Prisma error');
   });
 
