@@ -65,7 +65,7 @@ describe('Codes API Routes', () => {
       }
     });
 
-    await app.register(codesRoutes);
+    await app.register(codesRoutes, { prefix: '/api/v1' });
 
     // Error handler that matches the real error-handler.ts behavior
     app.setErrorHandler((error, request, reply) => {
