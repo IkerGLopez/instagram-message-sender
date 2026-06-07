@@ -29,7 +29,7 @@ db.$on('query', (e: { duration: number }) => {
   logger.trace({ duration: e.duration }, 'Prisma query');
 });
 
-db.$on('error', (e: Error) => {
+db.$on('error', (e: any) => {
   logger.error({ error: e }, 'Prisma error');
 });
 

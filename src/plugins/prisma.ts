@@ -16,7 +16,7 @@ export const prismaPlugin = fp(async function prismaPlugin(app: FastifyInstance)
     logger.trace({ duration: e.duration, query: e.query }, 'Prisma query');
   });
 
-  prisma.$on('error', (e: Error) => {
+  prisma.$on('error', (e: any) => {
     logger.error({ error: e }, 'Prisma error');
   });
 
