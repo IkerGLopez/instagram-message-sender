@@ -25,9 +25,13 @@ export const bullmqPlugin = fp(async function bullmqPlugin(app: FastifyInstance)
     },
   });
 
-  // DM dispatch queue (rate-limited to 1 msg/sec)
+  // DM dispatch queue (rate-limited to 1 msg/sec to respect Instagram's limit)
   const dmQueue = new Queue('dm-queue', {
     connection,
+    limiter: {
+      max: 1,
+      duration: 1000,
+    },
     defaultJobOptions: {
       attempts: QUEUE_DEFAULT_ATTEMPTS,
       backoff: {
@@ -37,8 +41,7 @@ export const bullmqPlugin = fp(async function bullmqPlugin(app: FastifyInstance)
       removeOnComplete: { age: 3600, count: 100 },
       removeOnFail: { age: 86400 },
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
 
   app.decorate('followQueue', followQueue);
   app.decorate('dmQueue', dmQueue);
