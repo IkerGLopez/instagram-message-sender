@@ -58,6 +58,6 @@ USER nodejs
 # Expose default port
 EXPOSE 3000
 
-# Default: start the HTTP server
-# To run the worker instead: docker run <image> node dist/worker.js
-CMD ["node", "dist/server.js"]
+# Default: start both the HTTP server and the worker in the same container
+# This allows using Render's Free Tier for web services
+CMD ["sh", "-c", "node dist/server.js & node dist/worker.js & wait"]

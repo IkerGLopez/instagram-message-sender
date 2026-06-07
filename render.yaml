@@ -1,51 +1,35 @@
 services:
-  # 1. Web Service (Fastify Server)
+  # 1. Web Service (Fastify Server + Worker merged for Free Tier)
   - type: web
     name: instagram-server
     runtime: docker
     dockerfilePath: ./Dockerfile
-    dockerCommand: node dist/server.js
+    healthCheckPath: /health
     envVars:
+      # Database (External - Neon recommended for free tier)
       - key: DATABASE_URL
-        fromDatabase:
-          name: instagram-db
-          property: connectionString
+        sync: false
+      # Redis (External - Upstash recommended for free tier)
       - key: REDIS_URL
         sync: false
+      # Environment
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-      # Añade aquí tus secretos de Instagram manualmente en el dashboard de Render
-      # - key: INSTAGRAM_APP_ID
-      # - key: INSTAGRAM_APP_SECRET
-      # ...
-
-  # 2. Background Worker (BullMQ Processor)
-  - type: worker
-    name: instagram-worker
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerCommand: node dist/worker.js
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: instagram-db
-          property: connectionString
-      - key: REDIS_URL
+      # Instagram Secrets (User must provide these)
+      - key: INSTAGRAM_APP_ID
         sync: false
-      - key: NODE_ENV
-        value: production
-      # Mismos secretos de Instagram que el servidor
-
-databases:
-  - name: instagram-db
-    databaseName: instagram_retention
-    user: dev
-
-  # Render no tiene Redis nativo gratuito en el plan free, 
-  # pero puedes usar Upstash (gratis) y poner la URL en las env vars.
-  # Si usas el plan paid de Render, descomenta esto:
-  # - type: redis
-  #   name: instagram-redis
-  #   ipAllowList: [] # Allow all
+      - key: INSTAGRAM_APP_SECRET
+        sync: false
+      - key: INSTAGRAM_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_WEBHOOK_VERIFY_TOKEN
+        sync: false
+      - key: INSTAGRAM_BUSINESS_ACCOUNT_ID
+        sync: false
+      # App Secrets
+      - key: API_KEY_HASH_SECRET
+        sync: false
+      - key: STORE_BASE_URL
+        sync: false
