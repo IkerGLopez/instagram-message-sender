@@ -8,7 +8,6 @@ import { bullmqPlugin } from './plugins/bullmq.js';
 import { swaggerPlugin } from './plugins/swagger.js';
 import { registerErrorHandler } from './middleware/error-handler.js';
 import { instagramWebhookRoutes } from './routes/webhooks/instagram.js';
-import { codesRoutes } from './routes/api/codes.js';
 import { legalRoutes } from './routes/legal.js';
 import { healthRoute } from './health/health.js';
 import { apiKeyAuthMiddleware } from './middleware/api-key-auth.js';
@@ -98,7 +97,6 @@ export async function buildApp() {
       timeWindow: '1 minute',
       keyGenerator: (req) => (req.headers['x-api-key'] as string) || req.ip,
     });
-    await apiApp.register(codesRoutes, { prefix: '/api/v1' });
   }, { prefix: '' });
 
   // Health endpoint (no auth, no rate limit)

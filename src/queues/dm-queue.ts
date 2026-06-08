@@ -9,9 +9,7 @@ import {
 export const DM_QUEUE_NAME = 'instagram-dm';
 
 export interface DmDispatchJob {
-  discountCodeId: string;
   instagramUserId: string;
-  code: string;
 }
 
 export function createDmQueue(connection: Redis) {

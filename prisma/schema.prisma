@@ -8,15 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum DiscountStatus {
-  ACTIVE
-  REDEEMED
-  EXPIRED
-  REVOKED
-
-  @@map("discount_status")
-}
-
 enum WebhookProcessingStatus {
   PENDING
   PROCESSED
@@ -27,38 +18,14 @@ enum WebhookProcessingStatus {
 }
 
 model InstagramFollower {
-  id                String         @id @default(uuid()) @map("id")
-  instagramUserId   String         @unique @map("instagram_user_id")
-  followedAt        DateTime       @default(now()) @map("followed_at")
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
-  discountCodes     DiscountCode[]
+  id              String   @id @default(uuid()) @map("id")
+  instagramUserId String   @unique @map("instagram_user_id")
+  followedAt      DateTime @default(now()) @map("followed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("instagram_followers")
   @@index([followedAt])
-}
-
-model DiscountCode {
-  id              String          @id @default(uuid()) @map("id")
-  code            String          @unique @map("code")
-  instagramUserId String          @map("instagram_user_id")
-  follower        InstagramFollower @relation(fields: [instagramUserId], references: [instagramUserId], onDelete: Cascade)
-  status          DiscountStatus  @default(ACTIVE) @map("status")
-  discountPercent Int             @default(3) @map("discount_percentage")
-  expiresAt       DateTime        @map("expires_at")
-  redeemedAt      DateTime?       @map("redeemed_at")
-  orderId         String?         @map("order_id")
-  redeemedIp      String?         @map("redeemed_ip")
-  dmSentAt        DateTime?       @map("dm_sent_at")
-  dmMessageId     String?         @map("dm_message_id")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
-
-  @@map("discount_codes")
-  @@index([instagramUserId])
-  @@index([status])
-  @@index([expiresAt])
-  @@index([code])
 }
 
 model ApiKey {
@@ -79,7 +46,7 @@ model WebhookEvent {
   id                String                  @id @default(uuid()) @map("id")
   eventType         String                  @map("event_type")
   rawPayload        Json                    @map("raw_payload")
-  processingStatus  WebhookProcessingStatus @default(PENDING) @map("processing_status")
+  processingStatus  WebhookProcessingStatus  @default(PENDING) @map("processing_status")
   errorMessage      String?                 @map("error_message")
   instagramUserId   String?                 @map("instagram_user_id")
   createdAt         DateTime                @default(now()) @map("created_at")

@@ -8,12 +8,6 @@ import { Queue } from 'bullmq';
  */
 export function createMockPrisma(overrides: Partial<PrismaClient> = {}): Partial<PrismaClient> {
   const mockTx = {
-    discountCode: {
-      findUnique: vi.fn().mockResolvedValue(null),
-      findFirst: vi.fn().mockResolvedValue(null),
-      create: vi.fn().mockResolvedValue({ id: 'test-uuid', code: 'WELCOME-TESTCODE' }),
-      update: vi.fn().mockResolvedValue({}),
-    },
     instagramFollower: {
       upsert: vi.fn().mockResolvedValue({}),
     },
@@ -32,12 +26,6 @@ export function createMockPrisma(overrides: Partial<PrismaClient> = {}): Partial
     $disconnect: vi.fn().mockResolvedValue(undefined),
     $on: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn) => fn(mockTx)),
-    discountCode: {
-      findUnique: vi.fn().mockResolvedValue(null),
-      findFirst: vi.fn().mockResolvedValue(null),
-      create: vi.fn().mockResolvedValue({ id: 'test-uuid', code: 'WELCOME-TESTCODE' }),
-      update: vi.fn().mockResolvedValue({}),
-    },
     instagramFollower: {
       upsert: vi.fn().mockResolvedValue({}),
     },

@@ -3,7 +3,6 @@ import IORedis from 'ioredis';
 import { PrismaClient } from '@prisma/client';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
-import { CodeEngine } from './services/code-engine.js';
 import { DMDispatcher } from './services/dm-dispatcher.js';
 import { createFollowQueue, createDmQueue } from './queues/index.js';
 import { processFollowEventJob, processDmDispatchJob } from './queues/job-handlers.js';
@@ -34,7 +33,6 @@ db.$on('error', (e: any) => {
 });
 
 // Shared services
-const codeEngine = new CodeEngine(db);
 const dmDispatcher = new DMDispatcher();
 
 // Queue instances
@@ -48,7 +46,6 @@ const followWorker = new Worker(
     processFollowEventJob(job, {
       prisma: db,
       redis,
-      codeEngine,
       dmQueue,
     }),
   {
@@ -79,7 +76,6 @@ const dmWorker = new Worker(
   'instagram-dm',
   (job) =>
     processDmDispatchJob(job, {
-      prisma: db,
       dmDispatcher,
     }),
   {

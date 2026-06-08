@@ -21,20 +21,6 @@ async function main() {
   });
   console.log(`✅ Follower: ${follower.instagramUserId}`);
 
-  // Create test discount code (ACTIVE) — uses valid chars only (no 0 or 1)
-  const code = await prisma.discountCode.upsert({
-    where: { code: 'WELCOME-ABCDEFGH' },
-    update: {},
-    create: {
-      code: 'WELCOME-ABCDEFGH',
-      instagramUserId: follower.instagramUserId,
-      status: 'ACTIVE',
-      discountPercent: 3,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    },
-  });
-  console.log(`✅ Discount code: ${code.code}`);
-
   // Create test API key hash
   await prisma.apiKey.upsert({
     where: { hash: apiKeyHash },

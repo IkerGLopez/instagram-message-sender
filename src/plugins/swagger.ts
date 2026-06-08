@@ -19,7 +19,7 @@ export const swaggerPlugin = fp(async (app: FastifyInstance) => {
       info: {
         title: 'Instagram Message Sender API',
         version: '0.1.0',
-        description: 'Instagram Client Retention System — automates discount code generation and DM dispatch for new followers',
+        description: 'Instagram Client Retention System — automates static discount code DM dispatch for new followers',
       },
     },
   });

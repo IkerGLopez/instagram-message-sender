@@ -18,8 +18,8 @@ const envSchema = z.object({
   // API Key
   API_KEY_HASH_SECRET: z.string().min(1),
 
-  // Store
-  STORE_BASE_URL: z.string().url(),
+  // Static discount code (required)
+  STATIC_DISCOUNT_CODE: z.string().min(1),
 
   // Environment
   NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
