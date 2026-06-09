@@ -93,7 +93,7 @@ export async function instagramWebhookRoutes(app: FastifyInstance) {
 
       for (const entry of parsed.data.entry) {
         for (const change of entry.changes) {
-          if (change.field === 'follows') {
+          if (change.field === 'follows' || change.field === 'follow') {
             const instagramUserId = change.value.from.id;
 
             // Create webhook event record first
