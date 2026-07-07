@@ -18,11 +18,13 @@ enum WebhookProcessingStatus {
 }
 
 model InstagramFollower {
-  id              String   @id @default(uuid()) @map("id")
-  instagramUserId String   @unique @map("instagram_user_id")
-  followedAt      DateTime @default(now()) @map("followed_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(uuid()) @map("id")
+  instagramUserId String    @unique @map("instagram_user_id") @db.VarChar(64)
+  followedAt      DateTime  @default(now()) @map("followed_at") @db.Timestamptz
+  unfollowedAt    DateTime? @map("unfollowed_at") @db.Timestamptz
+  followCount     Int       @default(0) @map("follow_count")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("instagram_followers")
   @@index([followedAt])
@@ -30,13 +32,13 @@ model InstagramFollower {
 
 model InstagramComment {
   id              String   @id @default(uuid()) @map("id")
-  commentId       String   @unique @map("comment_id")
-  instagramUserId String   @map("instagram_user_id")
-  mediaId         String?  @map("media_id")
-  commentText     String   @map("comment_text")
-  commentedAt     DateTime @default(now()) @map("commented_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  commentId       String   @unique @map("comment_id") @db.VarChar(64)
+  instagramUserId String   @map("instagram_user_id") @db.VarChar(64)
+  mediaId         String?  @map("media_id") @db.VarChar(64)
+  commentText     String   @map("comment_text") @db.Text
+  commentedAt     DateTime @default(now()) @map("commented_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("instagram_comments")
   @@index([instagramUserId])
@@ -45,14 +47,14 @@ model InstagramComment {
 
 model DmRecord {
   id              String   @id @default(uuid()) @map("id")
-  instagramUserId String   @unique @map("instagram_user_id")
-  commentId       String?  @map("comment_id")
-  mediaId         String?  @map("media_id")
-  discountCode    String   @map("discount_code")
-  dmMessageId     String?  @map("dm_message_id")
-  dmSentAt        DateTime @default(now()) @map("dm_sent_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  instagramUserId String   @unique @map("instagram_user_id") @db.VarChar(64)
+  commentId       String?  @map("comment_id") @db.VarChar(64)
+  mediaId         String?  @map("media_id") @db.VarChar(64)
+  discountCode    String   @map("discount_code") @db.VarChar(64)
+  dmMessageId     String?  @map("dm_message_id") @db.VarChar(128)
+  dmSentAt        DateTime @default(now()) @map("dm_sent_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("dm_records")
   @@index([instagramUserId])
@@ -60,17 +62,17 @@ model DmRecord {
 }
 
 model WebhookEvent {
-  id                String                  @id @default(uuid()) @map("id")
-  eventType         String                  @map("event_type")
-  rawPayload        Json                    @map("raw_payload")
-  processingStatus  WebhookProcessingStatus  @default(PENDING) @map("processing_status")
-  errorMessage      String?                 @map("error_message")
-  instagramUserId   String?                 @map("instagram_user_id")
-  createdAt         DateTime                @default(now()) @map("created_at")
-  updatedAt         DateTime                @updatedAt @map("updated_at")
+  id               String                   @id @default(uuid()) @map("id")
+  eventType        String                   @map("event_type") @db.VarChar(64)
+  rawPayload       Json                     @map("raw_payload")
+  processingStatus WebhookProcessingStatus  @default(PENDING) @map("processing_status")
+  errorMessage     String?                  @map("error_message") @db.Text
+  instagramUserId  String?                  @map("instagram_user_id") @db.VarChar(64)
+  receivedAt       DateTime                 @default(now()) @map("received_at") @db.Timestamptz
+  processedAt      DateTime?                @map("processed_at") @db.Timestamptz
 
   @@map("webhook_events")
   @@index([processingStatus])
-  @@index([createdAt])
+  @@index([receivedAt])
   @@index([instagramUserId])
 }
