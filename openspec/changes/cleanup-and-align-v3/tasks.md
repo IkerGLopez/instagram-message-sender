@@ -50,22 +50,22 @@ Chain strategy: stacked-to-main
 
 ## Phase 4: Cleanup (delete dead code, remove references)
 
-- [ ] 4.1 **Delete** `src/middleware/api-key-auth.ts` (file + `UnauthorizedError` class)
-- [ ] 4.2 **Delete** `prisma/seed.ts` (API key seeding — dead code)
-- [ ] 4.3 **Delete** `src/queues/follow-queue.ts` (replaced by comment-queue.ts)
-- [ ] 4.4 Update `src/utils/crypto.ts` — remove `hashApiKey` function and `timingSafeEqual` import (keep `verifyInstagramSignature`, `createHmac` import stays)
-- [ ] 4.5 Update `src/middleware/error-handler.ts` — remove `import { UnauthorizedError } from './api-key-auth.js'` and its handler block
-- [ ] 4.6 Update `src/app.ts` — remove `apiKeyAuthMiddleware` import, remove `app.decorate('apiKeyAuth', ...)` line, remove empty API routes block (lines 93–100), remove `API_RATE_LIMIT_MAX_PER_KEY` import, remove dead imports
+- [x] 4.1 **Delete** `src/middleware/api-key-auth.ts` (file + `UnauthorizedError` class)
+- [x] 4.2 **Delete** `prisma/seed.ts` (API key seeding — dead code)
+- [x] 4.3 **Delete** `src/queues/follow-queue.ts` (replaced by comment-queue.ts)
+- [x] 4.4 Update `src/utils/crypto.ts` — remove `hashApiKey` function (kept `timingSafeEqual` — still used by `verifyInstagramSignature`)
+- [x] 4.5 Update `src/middleware/error-handler.ts` — remove `import { UnauthorizedError } from './api-key-auth.js'` and its handler block
+- [x] 4.6 Update `src/app.ts` — remove `apiKeyAuthMiddleware` import, remove `app.decorate('apiKeyAuth', ...)` line, remove empty API routes block, remove `API_RATE_LIMIT_MAX_PER_KEY` import; restored `WEBHOOK_RATE_LIMIT_MAX/WINDOW` to `constants.ts` (accidentally removed in 3d6a378)
 
 ## Phase 5: Peripheral Files
 
-- [ ] 5.1 Update `src/plugins/swagger.ts` — description: "followers" → "comment-triggered", version → `3.0.0`
-- [ ] 5.2 Update `src/health/health.ts` — `(app as any).followQueue` → `(app as any).commentQueue`, update queue detail string
-- [ ] 5.3 Update `src/routes/legal.ts` — replace "seguidores"/"seguimiento" with "usuarios que comentan"/"comentario"; update service descriptions
-- [ ] 5.4 Update `src/utils/build-message.ts` — verify template interpolation works with updated constant (no structural change needed, just review)
-- [ ] 5.5 Update `package.json` — description: "comment-triggered DM dispatch with static discount code"; remove `db:seed` script and `prisma.seed` config
-- [ ] 5.6 Update `test-webhook.mjs` — payload: `field: 'comments'` shape with comment text containing keyword
-- [ ] 5.7 Update `check-queue.mjs` — `bull:follow-queue` → `bull:comment-queue`, update key patterns
+- [x] 5.1 Update `src/plugins/swagger.ts` — description: "followers" → "comment-triggered", version → `3.0.0`
+- [x] 5.2 Update `src/health/health.ts` — `(app as any).followQueue` → `(app as any).commentQueue`, update queue detail string
+- [x] 5.3 Update `src/routes/legal.ts` — replace "seguidores"/"seguimiento" with "usuarios que comentan"/"comentario"; update service descriptions
+- [x] 5.4 Update `src/utils/build-message.ts` — verify template interpolation works with updated constant (no structural change needed, just review)
+- [x] 5.5 Update `package.json` — description: "comment-triggered DM dispatch with static discount code"; remove `db:seed` script and `prisma.seed` config
+- [x] 5.6 Update `test-webhook.mjs` — payload: `field: 'comments'` shape with comment text containing keyword
+- [x] 5.7 Update `check-queue.mjs` — `bull:follow-queue` → `bull:comment-queue`, update key patterns
 
 ## Phase 6: Tests
 
