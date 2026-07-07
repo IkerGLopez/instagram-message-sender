@@ -16,6 +16,10 @@ export const IG_ERROR_RATE_LIMIT = [4, 613];
 export const IG_ERROR_TOKEN_EXPIRED = 190;
 export const IG_ERROR_PERMISSION_DENIED = [10, 100];
 
+// Rate limiting
+export const WEBHOOK_RATE_LIMIT_MAX = 100;
+export const WEBHOOK_RATE_LIMIT_WINDOW = '1 minute';
+
 // Queue defaults
 export const QUEUE_DEFAULT_ATTEMPTS = 3;
 export const QUEUE_BACKOFF_DELAY = 5000; // 5 seconds

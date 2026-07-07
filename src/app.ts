@@ -10,13 +10,11 @@ import { registerErrorHandler } from './middleware/error-handler.js';
 import { instagramWebhookRoutes } from './routes/webhooks/instagram.js';
 import { legalRoutes } from './routes/legal.js';
 import { healthRoute } from './health/health.js';
-import { apiKeyAuthMiddleware } from './middleware/api-key-auth.js';
 import { hmacValidatorMiddleware } from './middleware/hmac-validator.js';
 import { env } from './config/env.js';
 import {
   WEBHOOK_RATE_LIMIT_MAX,
   WEBHOOK_RATE_LIMIT_WINDOW,
-  API_RATE_LIMIT_MAX_PER_KEY,
 } from './config/constants.js';
 
 export async function buildApp() {
@@ -62,9 +60,6 @@ export async function buildApp() {
     timeWindow: '1 minute',
   });
 
-  // Register middleware as decorators
-  app.decorate('apiKeyAuth', apiKeyAuthMiddleware);
-
   // Raw body capture for HMAC validation (preParsing hook)
   app.addHook('preParsing', async (request, _reply, payload) => {
     const chunks: Buffer[] = [];
@@ -88,15 +83,6 @@ export async function buildApp() {
     });
     webhookApp.addHook('preHandler', hmacValidatorMiddleware);
     await webhookApp.register(instagramWebhookRoutes);
-  }, { prefix: '' });
-
-  // API routes with API key auth and rate limiting
-  await app.register(async (apiApp) => {
-    await apiApp.register(rateLimit, {
-      max: API_RATE_LIMIT_MAX_PER_KEY,
-      timeWindow: '1 minute',
-      keyGenerator: (req) => (req.headers['x-api-key'] as string) || req.ip,
-    });
   }, { prefix: '' });
 
   // Health endpoint (no auth, no rate limit)
