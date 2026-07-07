@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Fastify from 'fastify';
 import { createHmac } from 'crypto';
-import { createMockPrisma, createMockRedis, createMockQueue, validFollowPayload } from '../../fixtures/test-helpers.js';
+import { createMockPrisma, createMockRedis, createMockQueue, validCommentPayload } from '../../fixtures/test-helpers.js';
 
 // Mock env module before any other imports
 vi.mock('@/config/env.js', () => ({
   env: {
     INSTAGRAM_WEBHOOK_VERIFY_TOKEN: 'test-verify-token',
     INSTAGRAM_APP_SECRET: 'test-app-secret',
+    TRIGGER_KEYWORD: 'BASUSTA',
+    STATIC_DISCOUNT_CODE: 'TEST_DISCOUNT',
     NODE_ENV: 'development',
     LOG_LEVEL: 'fatal',
     PORT: 3000,
     INSTAGRAM_PAGE_ACCESS_TOKEN: 'test-token',
-    API_KEY_HASH_SECRET: 'test-hash-secret',
     DATABASE_URL: 'postgresql://test:test@localhost/test',
     REDIS_URL: 'redis://localhost:6379',
-    STORE_BASE_URL: 'https://test-store.example.com',
     INSTAGRAM_APP_ID: 'test-app-id',
     INSTAGRAM_BUSINESS_ACCOUNT_ID: 'test-biz-id',
   },
@@ -40,23 +40,22 @@ function generateSignature(body: string, secret: string): string {
   return `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`;
 }
 
-describe('Instagram Webhook Routes', () => {
+describe('Instagram Webhook Routes (comment flow)', () => {
   let app: Fastify.FastifyInstance;
+  let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockCommentQueue: ReturnType<typeof createMockQueue>;
 
   beforeEach(async () => {
     app = Fastify({ logger: false });
 
     // Mock plugins
-    const mockPrisma = createMockPrisma();
+    mockPrisma = createMockPrisma();
     const mockRedis = createMockRedis();
-    const mockFollowQueue = createMockQueue();
-    const mockDmQueue = createMockQueue();
+    mockCommentQueue = createMockQueue();
 
     app.decorate('prisma', mockPrisma as any);
     app.decorate('redis', mockRedis as any);
-    app.decorate('followQueue', mockFollowQueue as any);
-    app.decorate('dmQueue', mockDmQueue as any);
-    app.decorate('apiKeyAuth', vi.fn());
+    app.decorate('commentQueue', mockCommentQueue as any);
 
     // Capture raw body (same as app.ts)
     app.addHook('preParsing', async (request, reply, payload) => {
@@ -121,9 +120,9 @@ describe('Instagram Webhook Routes', () => {
     });
   });
 
-  describe('POST /webhooks/instagram — Event receiver', () => {
-    it('returns 200 and enqueues job on valid follow payload', async () => {
-      const body = JSON.stringify(validFollowPayload);
+  describe('POST /webhooks/instagram — Comment event receiver', () => {
+    it('returns 200 and enqueues job on valid comment with keyword', async () => {
+      const body = JSON.stringify(validCommentPayload);
       const signature = generateSignature(body, 'test-app-secret');
 
       const response = await app.inject({
@@ -139,9 +138,12 @@ describe('Instagram Webhook Routes', () => {
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ received: true });
 
-      // Verify job was enqueued
-      const followQueue = (app as any).followQueue;
-      expect(followQueue.add).toHaveBeenCalled();
+      // Verify job was enqueued on commentQueue (not followQueue)
+      expect(mockCommentQueue.add).toHaveBeenCalled();
+
+      // Verify upsert was called for InstagramComment
+      const prisma = mockPrisma as any;
+      expect(prisma.instagramComment.upsert).toHaveBeenCalled();
     });
 
     it('returns 200 (ACK) on malformed payload', async () => {
@@ -174,6 +176,47 @@ describe('Instagram Webhook Routes', () => {
       });
 
       expect(response.statusCode).toBe(200);
+    });
+
+    it('discards comment without keyword (no enqueue)', async () => {
+      const payloadWithoutKeyword = {
+        ...validCommentPayload,
+        entry: [
+          {
+            ...validCommentPayload.entry[0],
+            changes: [
+              {
+                ...validCommentPayload.entry[0].changes[0],
+                value: {
+                  ...validCommentPayload.entry[0].changes[0].value,
+                  comment: {
+                    ...validCommentPayload.entry[0].changes[0].value.comment,
+                    text: 'me gusta!',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const body = JSON.stringify(payloadWithoutKeyword);
+      const signature = generateSignature(body, 'test-app-secret');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/webhooks/instagram',
+        headers: {
+          'x-hub-signature-256': signature,
+          'content-type': 'application/json',
+        },
+        payload: body,
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      // CommentQueue should NOT have been called (keyword didn't match)
+      expect(mockCommentQueue.add).not.toHaveBeenCalled();
     });
   });
 });
