@@ -17,7 +17,6 @@ export const logger = pino({
   redact: {
     paths: [
       'INSTAGRAM_PAGE_ACCESS_TOKEN',
-      'API_KEY_HASH_SECRET',
       'DATABASE_URL',
       'req.headers.authorization',
       'req.headers.x-api-key',
