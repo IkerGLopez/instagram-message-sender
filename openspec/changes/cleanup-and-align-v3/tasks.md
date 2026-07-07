@@ -69,9 +69,9 @@ Chain strategy: stacked-to-main
 
 ## Phase 6: Tests
 
-- [ ] 6.1 Update `test/fixtures/test-helpers.ts` — replace `validFollowPayload` with `validCommentPayload` (comment shape); remove `apiKey` mock from `createMockPrisma`; add `instagramComment` and `dmRecord` mock methods
-- [ ] 6.2 Update `test/fixtures/webhook-payloads.ts` — replace follow payloads with comment payloads (valid with keyword, valid without keyword, malformed)
-- [ ] 6.3 **Create** `test/unit/keyword-match.test.ts` — 9 test cases from spec (exact, case-insensitive, word boundary, no partial, empty keyword guard)
-- [ ] 6.4 Update `test/unit/hmac-validator.test.ts` — remove `hashApiKey` import and test suite; keep `verifyInstagramSignature` tests
-- [ ] 6.5 Update `test/routes/webhooks/instagram.test.ts` — replace `validFollowPayload` import with `validCommentPayload`; rename `followQueue` mocks to `commentQueue`; update assertions for comment flow
-- [ ] 6.6 Update `test/integration/webhook-route.test.ts` — replace follow payload imports with comment payloads; update test descriptions
+- [x] 6.1 Update `test/fixtures/test-helpers.ts` — replace `validFollowPayload` with `validCommentPayload` (comment shape); remove `apiKey` mock from `createMockPrisma`; add `instagramComment` and `dmRecord` mock methods
+- [x] 6.2 Update `test/fixtures/webhook-payloads.ts` — replace follow payloads with comment payloads (valid with keyword, valid without keyword, malformed)
+- [x] 6.3 **Create** `test/unit/keyword-match.test.ts` — 9 test cases from spec (exact, case-insensitive, word boundary, no partial, empty keyword guard)
+- [x] 6.4 Update `test/unit/hmac-validator.test.ts` — remove `hashApiKey` import and test suite; keep `verifyInstagramSignature` tests
+- [x] 6.5 Update `test/routes/webhooks/instagram.test.ts` — replace `validFollowPayload` import with `validCommentPayload`; rename `followQueue` mocks to `commentQueue`; update assertions for comment flow
+- [x] 6.6 Update `test/integration/webhook-route.test.ts` — replace follow payload imports with comment payloads; update test descriptions
