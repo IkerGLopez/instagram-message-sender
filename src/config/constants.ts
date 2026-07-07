@@ -1,12 +1,13 @@
 // DM message template — sent when a user comments with the trigger keyword.
-// Contains only the static discount code; no store URL.
-export const DM_WELCOME_TEMPLATE = `¡Gracias por tu interés! 🎉
+// Contains static discount code; mentions 3% discount at physical establishment.
+export const DM_WELCOME_TEMPLATE = `¡Hola! 👋 Gracias por tu interés.
 
-Acá tenés tu código de descuento exclusivo:
+Tenemos un regalo para ti: muestra este código en nuestro establecimiento
+y obtén un 3% de descuento en tu visita. 🎉
 
-🏷️ {CODE}
+Tu código: *{CODE}*
 
-¡Gracias por ser parte de nuestra comunidad!`;
+¡Te esperamos! 💙`;
 
 // Instagram API base URL
 export const INSTAGRAM_GRAPH_API_BASE = 'https://graph.facebook.com/v21.0';

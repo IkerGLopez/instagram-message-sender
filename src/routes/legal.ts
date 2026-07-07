@@ -79,9 +79,9 @@ export async function legalRoutes(app: FastifyInstance) {
         
         <h2>3. Códigos de Descuento</h2>
         <ul>
-          <li>Los códigos son de un solo uso y tienen fecha de expiración</li>
-          <li>No son transferibles ni canjeables por efectivo</li>
-          <li>Se aplican únicamente a compras realizadas en nuestra tienda online</li>
+          <li>El código de descuento es fijo: se comunica exclusivamente vía DM</li>
+          <li>No es transferible ni canjeable por efectivo</li>
+          <li>Se aplica únicamente presentando el código en nuestro establecimiento físico</li>
         </ul>
         
         <h2>4. Limitación de Responsabilidad</h2>
