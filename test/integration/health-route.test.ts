@@ -36,7 +36,7 @@ describe('GET /health', () => {
 
     if (response.status === 200) {
       const { services } = response.body;
-      expect(services).toHaveProperty('postgres');
+      expect(services).toHaveProperty('database');
       expect(services).toHaveProperty('redis');
       expect(services).toHaveProperty('instagram_token');
       expect(services).toHaveProperty('queues');
