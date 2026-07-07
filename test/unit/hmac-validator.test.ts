@@ -10,8 +10,8 @@ vi.mock('@/config/env.js', () => ({
     INSTAGRAM_BUSINESS_ACCOUNT_ID: 'test-biz-id',
     DATABASE_URL: 'postgresql://test:test@localhost/test',
     REDIS_URL: 'redis://localhost:6379',
-    API_KEY_HASH_SECRET: 'test-hash-secret',
-    STORE_BASE_URL: 'https://test-store.example.com',
+    TRIGGER_KEYWORD: 'BASUSTA',
+    STATIC_DISCOUNT_CODE: 'TEST_DISCOUNT',
     NODE_ENV: 'development',
     LOG_LEVEL: 'fatal',
     PORT: 3000,
@@ -20,7 +20,6 @@ vi.mock('@/config/env.js', () => ({
 
 import {
   verifyInstagramSignature,
-  hashApiKey,
 } from '@/utils/crypto.js';
 import { createHmac } from 'crypto';
 
@@ -57,24 +56,5 @@ describe('crypto utilities', () => {
     });
   });
 
-  describe('hashApiKey', () => {
-    it('produces a consistent hex hash', () => {
-      const hash1 = hashApiKey('my-api-key', 'secret');
-      const hash2 = hashApiKey('my-api-key', 'secret');
-      expect(hash1).toBe(hash2);
-      expect(hash1).toMatch(/^[a-f0-9]{64}$/);
-    });
 
-    it('produces different hashes for different keys', () => {
-      const hash1 = hashApiKey('key-one', 'secret');
-      const hash2 = hashApiKey('key-two', 'secret');
-      expect(hash1).not.toBe(hash2);
-    });
-
-    it('produces different hashes for different secrets', () => {
-      const hash1 = hashApiKey('my-api-key', 'secret-a');
-      const hash2 = hashApiKey('my-api-key', 'secret-b');
-      expect(hash1).not.toBe(hash2);
-    });
-  });
 });
