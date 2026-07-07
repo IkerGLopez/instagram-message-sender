@@ -28,8 +28,8 @@ services:
         sync: false
       - key: INSTAGRAM_BUSINESS_ACCOUNT_ID
         sync: false
-      # App Secrets
-      - key: API_KEY_HASH_SECRET
+      # App Config
+      - key: TRIGGER_KEYWORD
         sync: false
-      - key: STORE_BASE_URL
+      - key: STATIC_DISCOUNT_CODE
         sync: false

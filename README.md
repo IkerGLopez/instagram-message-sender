@@ -62,7 +62,6 @@ Edit `.env` with your values. For local development, you can use placeholder Ins
 ```bash
 pnpm db:generate    # Generate Prisma client
 pnpm db:migrate     # Run migrations
-pnpm db:seed        # Seed demo data (creates test API key + discount code)
 ```
 
 ### 5. Run the Application
