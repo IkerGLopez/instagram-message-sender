@@ -4,8 +4,8 @@ import { PrismaClient } from '@prisma/client';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { DMDispatcher } from './services/dm-dispatcher.js';
-import { createFollowQueue, createDmQueue } from './queues/index.js';
-import { processFollowEventJob, processDmDispatchJob } from './queues/job-handlers.js';
+import { createCommentQueue, createDmQueue } from './queues/index.js';
+import { processCommentEventJob, processDmDispatchJob } from './queues/job-handlers.js';
 
 // Shared Redis connection
 const redis = new IORedis(env.REDIS_URL, {
@@ -36,14 +36,14 @@ db.$on('error', (e: any) => {
 const dmDispatcher = new DMDispatcher();
 
 // Queue instances
-const followQueue = createFollowQueue(redis);
+const commentQueue = createCommentQueue(redis);
 const dmQueue = createDmQueue(redis);
 
-// Follow event worker
-const followWorker = new Worker(
-  'instagram-follow',
+// Comment event worker
+const commentWorker = new Worker(
+  'instagram-comment',
   (job) =>
-    processFollowEventJob(job, {
+    processCommentEventJob(job, {
       prisma: db,
       redis,
       dmQueue,
@@ -54,20 +54,20 @@ const followWorker = new Worker(
   },
 );
 
-followWorker.on('error', (err) => logger.error({ err }, 'Follow worker error'));
+commentWorker.on('error', (err) => logger.error({ err }, 'Comment worker error'));
 
-followWorker.on('active', (job) => {
-  logger.info({ jobId: job.id, jobName: job.name }, 'Follow job started');
+commentWorker.on('active', (job) => {
+  logger.info({ jobId: job.id, jobName: job.name }, 'Comment job started');
 });
 
-followWorker.on('completed', (job) => {
-  logger.info({ jobId: job.id }, 'Follow event processed');
+commentWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'Comment event processed');
 });
 
-followWorker.on('failed', (job, err) => {
+commentWorker.on('failed', (job, err) => {
   logger.error(
     { jobId: job?.id, error: err.message },
-    'Follow event processing failed',
+    'Comment event processing failed',
   );
 });
 
@@ -77,6 +77,7 @@ const dmWorker = new Worker(
   (job) =>
     processDmDispatchJob(job, {
       dmDispatcher,
+      prisma: db,
     }),
   {
     connection: redis,
@@ -102,9 +103,9 @@ dmWorker.on('failed', (job, err) => {
 const shutdown = async (signal: string) => {
   logger.info({ signal }, 'Worker shutdown initiated');
 
-  await followWorker.close();
+  await commentWorker.close();
   await dmWorker.close();
-  await followQueue.close();
+  await commentQueue.close();
   await dmQueue.close();
   await db.$disconnect();
   redis.disconnect();

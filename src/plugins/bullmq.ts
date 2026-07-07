@@ -1,22 +1,22 @@
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import { createFollowQueue } from '../queues/follow-queue.js';
+import { createCommentQueue } from '../queues/comment-queue.js';
 import { createDmQueue } from '../queues/dm-queue.js';
 import { logger } from '../utils/logger.js';
 
 export const bullmqPlugin = fp(async function bullmqPlugin(app: FastifyInstance) {
   const connection = (app as any).redis;
 
-  const followQueue = createFollowQueue(connection);
+  const commentQueue = createCommentQueue(connection);
   const dmQueue = createDmQueue(connection);
 
-  app.decorate('followQueue', followQueue);
+  app.decorate('commentQueue', commentQueue);
   app.decorate('dmQueue', dmQueue);
 
   logger.info('BullMQ queues initialized');
 
   app.addHook('onClose', async () => {
-    await followQueue.close();
+    await commentQueue.close();
     await dmQueue.close();
     logger.info('BullMQ queues closed');
   });
@@ -24,7 +24,7 @@ export const bullmqPlugin = fp(async function bullmqPlugin(app: FastifyInstance)
 
 declare module 'fastify' {
   interface FastifyInstance {
-    followQueue: ReturnType<typeof createFollowQueue>;
+    commentQueue: ReturnType<typeof createCommentQueue>;
     dmQueue: ReturnType<typeof createDmQueue>;
   }
 }
