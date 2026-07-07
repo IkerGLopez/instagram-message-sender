@@ -43,6 +43,7 @@ export class WebhookProcessor {
       where: { id: webhookEventId },
       data: {
         processingStatus: 'PROCESSED',
+        processedAt: new Date(),
         instagramUserId,
       },
     });
