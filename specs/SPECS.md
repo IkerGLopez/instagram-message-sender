@@ -713,7 +713,6 @@ DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
 REDIS_URL=redis://user:password@host:6379
 
 # Aplicación
-API_KEY_HASH_SECRET=            # Salt para hashing de API keys (si se usan endpoints protegidos)
 NODE_ENV=production
 LOG_LEVEL=info
 ```

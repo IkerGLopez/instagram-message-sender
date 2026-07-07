@@ -12,10 +12,10 @@ export async function healthRoute(app: FastifyInstance) {
     // Check PostgreSQL
     try {
       await (app as any).prisma.$queryRaw`SELECT 1`;
-      health.postgres = { status: 'ok' };
+      health.database = { status: 'ok' };
     } catch (error) {
       logger.error(error, 'Postgres health check failed');
-      health.postgres = { status: 'error', detail: 'Database connection failed' };
+      health.database = { status: 'error', detail: 'Database connection failed' };
       overallStatus = 'error';
     }
 

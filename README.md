@@ -147,7 +147,6 @@ src/
 
 prisma/
 ├── schema.prisma             # Database schema (InstagramComment, InstagramFollower, DmRecord, WebhookEvent)
-└── seed.ts                   # Demo data seeding
 
 test/
 ├── fixtures/
