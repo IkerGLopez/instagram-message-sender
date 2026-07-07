@@ -1,20 +1,63 @@
-import type { WebhookPayload } from '../src/routes/webhooks/instagram.schema.js';
+import type { WebhookPayload } from '../../src/routes/webhooks/instagram.schema.js';
 
 /**
- * Valid Instagram follow event webhook payload matching WebhookPayloadSchema.
+ * Valid Instagram comment webhook payload with trigger keyword "BASUSTA".
+ * Matches WebhookPayloadSchema with field: 'comments'.
  */
-export const validFollowPayload: WebhookPayload = {
+export const validCommentPayload: WebhookPayload = {
   object: 'instagram',
   entry: [
     {
-      id: 'instagram-account-id',
+      id: 'instagram-business-account-id',
       time: Date.now(),
       changes: [
         {
-          field: 'follows',
+          field: 'comments',
           value: {
-            from: {
-              id: 'follower-instagram-id-123',
+            media: {
+              id: 'media-id-123',
+            },
+            comment: {
+              id: 'comment-id-456',
+              created_time: Date.now(),
+              text: 'BASUSTA',
+              from: {
+                id: 'commenter-instagram-id-123',
+                username: 'testuser',
+              },
+            },
+          },
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Comment payload without the trigger keyword.
+ * Use to verify the system discards comments that don't match.
+ */
+export const noKeywordPayload: WebhookPayload = {
+  object: 'instagram',
+  entry: [
+    {
+      id: 'instagram-business-account-id',
+      time: Date.now(),
+      changes: [
+        {
+          field: 'comments',
+          value: {
+            media: {
+              id: 'media-id-123',
+            },
+            comment: {
+              id: 'comment-id-789',
+              created_time: Date.now(),
+              text: 'me gusta!',
+              from: {
+                id: 'commenter-instagram-id-456',
+                username: 'otheruser',
+              },
             },
           },
         },
@@ -31,14 +74,22 @@ export const invalidSignaturePayload = {
   object: 'instagram',
   entry: [
     {
-      id: 'instagram-account-id',
+      id: 'instagram-business-account-id',
       time: Date.now(),
       changes: [
         {
-          field: 'follows',
+          field: 'comments',
           value: {
-            from: {
-              id: 'follower-instagram-id-456',
+            media: {
+              id: 'media-id-123',
+            },
+            comment: {
+              id: 'comment-id-999',
+              created_time: Date.now(),
+              text: 'BASUSTA',
+              from: {
+                id: 'commenter-instagram-id-456',
+              },
             },
           },
         },
@@ -59,8 +110,8 @@ export const malformedPayload = {
       time: Date.now(),
       changes: [
         {
-          field: 'follows',
-          // missing 'value.from.id'
+          field: 'comments',
+          // missing 'value.media.id' and 'value.comment'
           value: {},
         },
       ],

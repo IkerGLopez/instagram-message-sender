@@ -11,12 +11,15 @@ export function createMockPrisma(overrides: Partial<PrismaClient> = {}): Partial
     instagramFollower: {
       upsert: vi.fn().mockResolvedValue({}),
     },
+    instagramComment: {
+      upsert: vi.fn().mockResolvedValue({}),
+    },
+    dmRecord: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
     webhookEvent: {
       create: vi.fn().mockResolvedValue({ id: 'webhook-uuid' }),
       update: vi.fn().mockResolvedValue({}),
-    },
-    apiKey: {
-      findUnique: vi.fn().mockResolvedValue(null),
     },
   };
 
@@ -29,12 +32,15 @@ export function createMockPrisma(overrides: Partial<PrismaClient> = {}): Partial
     instagramFollower: {
       upsert: vi.fn().mockResolvedValue({}),
     },
+    instagramComment: {
+      upsert: vi.fn().mockResolvedValue({}),
+    },
+    dmRecord: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
     webhookEvent: {
       create: vi.fn().mockResolvedValue({ id: 'webhook-uuid' }),
       update: vi.fn().mockResolvedValue({}),
-    },
-    apiKey: {
-      findUnique: vi.fn().mockResolvedValue(null),
     },
     ...overrides,
   };
@@ -64,20 +70,30 @@ export function createMockQueue(): Partial<Queue> {
 }
 
 /**
- * Valid webhook follow event payload from Instagram.
+ * Valid Instagram comment webhook payload with trigger keyword.
+ * Matches the WebhookPayloadSchema with field: 'comments'.
  */
-export const validFollowPayload = {
+export const validCommentPayload = {
   object: 'instagram',
   entry: [
     {
-      id: 'instagram-account-id',
+      id: 'instagram-business-account-id',
       time: Date.now(),
       changes: [
         {
-          field: 'follows' as const,
+          field: 'comments' as const,
           value: {
-            from: {
-              id: 'follower-instagram-id-123',
+            media: {
+              id: 'media-id-123',
+            },
+            comment: {
+              id: 'comment-id-456',
+              created_time: Date.now(),
+              text: 'BASUSTA',
+              from: {
+                id: 'commenter-instagram-id-123',
+                username: 'testuser',
+              },
             },
           },
         },
