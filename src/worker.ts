@@ -45,7 +45,6 @@ const commentWorker = new Worker(
   (job) =>
     processCommentEventJob(job, {
       prisma: db,
-      redis,
       dmQueue,
     }),
   {

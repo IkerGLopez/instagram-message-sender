@@ -108,18 +108,6 @@ export async function instagramWebhookRoutes(app: FastifyInstance) {
             continue;
           }
 
-          // Upsert InstagramComment record
-          await prisma.instagramComment.upsert({
-            where: { commentId },
-            update: { commentText },
-            create: {
-              commentId,
-              instagramUserId,
-              mediaId,
-              commentText,
-            },
-          });
-
           // Dedup check — one DM per user
           const existingDm = await prisma.dmRecord.findFirst({
             where: { instagramUserId },

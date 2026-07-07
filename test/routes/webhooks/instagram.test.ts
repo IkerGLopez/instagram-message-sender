@@ -140,10 +140,6 @@ describe('Instagram Webhook Routes (comment flow)', () => {
 
       // Verify job was enqueued on commentQueue (not followQueue)
       expect(mockCommentQueue.add).toHaveBeenCalled();
-
-      // Verify upsert was called for InstagramComment
-      const prisma = mockPrisma as any;
-      expect(prisma.instagramComment.upsert).toHaveBeenCalled();
     });
 
     it('returns 200 (ACK) on malformed payload', async () => {

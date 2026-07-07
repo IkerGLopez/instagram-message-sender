@@ -5,14 +5,12 @@ import { buildWelcomeMessage } from '../utils/build-message.js';
 import { env } from '../config/env.js';
 import type { PrismaClient } from '@prisma/client';
 import type { Queue } from 'bullmq';
-import type { Redis } from 'ioredis';
 
 import { CommentEventJob } from './comment-queue.js';
 import { DmDispatchJob } from './dm-queue.js';
 
 export interface CommentEventJobDeps {
   prisma: PrismaClient;
-  redis: Redis;
   dmQueue: Queue;
 }
 
@@ -30,7 +28,7 @@ export async function processCommentEventJob(
     'Processing comment event',
   );
 
-  const { prisma, redis, dmQueue } = deps;
+  const { prisma, dmQueue } = deps;
 
   // Dynamically import to avoid circular dependency issues
   const { WebhookProcessor } = await import(
@@ -50,6 +48,19 @@ export async function processDmDispatchJob(
     { jobId: job.id, instagramUserId, commentId },
     'Processing DM dispatch',
   );
+
+  // Idempotency guard: if DmRecord already exists, skip (prevents duplicate DMs on retry or race)
+  const existingRecord = await deps.prisma.dmRecord.findFirst({
+    where: { instagramUserId },
+  });
+
+  if (existingRecord) {
+    logger.info(
+      { instagramUserId, existingMessageId: existingRecord.dmMessageId },
+      'DM already recorded — skipping duplicate dispatch',
+    );
+    return;
+  }
 
   const { dmDispatcher } = deps;
   const messageText = buildWelcomeMessage();

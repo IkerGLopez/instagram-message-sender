@@ -10,7 +10,6 @@ export function registerErrorHandler(app: FastifyInstance): void {
     (error: FastifyError & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) => {
       // Zod validation errors from Fastify schema validation
       if (error.validation) {
-        console.log('DEBUG: Validation error', JSON.stringify(error.validation, null, 2));
         logger.warn(
           { path: request.url, validation: error.validation },
           'Validation error',
