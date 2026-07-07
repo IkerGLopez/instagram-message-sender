@@ -1,5 +1,4 @@
 import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from 'fastify';
-import { UnauthorizedError } from './api-key-auth.js';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -20,11 +19,6 @@ export function registerErrorHandler(app: FastifyInstance): void {
           error: 'validation_error',
           details: error.validation,
         });
-      }
-
-      // Custom unauthorized error
-      if (error instanceof UnauthorizedError) {
-        return reply.code(401).send({ error: 'unauthorized', message: error.message });
       }
 
       // Fastify's built-in 4xx errors

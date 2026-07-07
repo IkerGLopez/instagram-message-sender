@@ -28,18 +28,35 @@ model InstagramFollower {
   @@index([followedAt])
 }
 
-model ApiKey {
-  id        String   @id @default(uuid()) @map("id")
-  hash      String   @unique @map("hash")
-  name      String   @map("name")
-  isActive  Boolean  @default(true) @map("is_active")
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model InstagramComment {
+  id              String   @id @default(uuid()) @map("id")
+  commentId       String   @unique @map("comment_id")
+  instagramUserId String   @map("instagram_user_id")
+  mediaId         String?  @map("media_id")
+  commentText     String   @map("comment_text")
+  commentedAt     DateTime @default(now()) @map("commented_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  @@map("api_keys")
-  @@index([isActive])
-  @@index([expiresAt])
+  @@map("instagram_comments")
+  @@index([instagramUserId])
+  @@index([commentedAt])
+}
+
+model DmRecord {
+  id              String   @id @default(uuid()) @map("id")
+  instagramUserId String   @unique @map("instagram_user_id")
+  commentId       String?  @map("comment_id")
+  mediaId         String?  @map("media_id")
+  discountCode    String   @map("discount_code")
+  dmMessageId     String?  @map("dm_message_id")
+  dmSentAt        DateTime @default(now()) @map("dm_sent_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("dm_records")
+  @@index([instagramUserId])
+  @@index([dmSentAt])
 }
 
 model WebhookEvent {

@@ -1,23 +1,23 @@
 # Instagram Client Retention System
 
-Automated discount code generation and DM dispatch for new Instagram followers. When someone follows your corporate account, they instantly receive a personalized welcome DM with a unique 3% discount code.
+Automated DM dispatch for users who comment with a specific keyword on Instagram posts. When someone comments "BASUSTA" (or configured keyword) on a publication, they instantly receive a personalized DM with a static discount code to present at the physical establishment.
 
 ## Architecture
 
 ```
-Instagram Follow → Webhook → Queue → Generate Code → Send DM → Track Redemption
+Instagram Comment (keyword) → Webhook → Queue → Send DM → Record Sent
 ```
 
 ### Components
 
 | Component | Description |
 |-----------|-------------|
-| **Webhook Receiver** | Receives Instagram follow events via `POST /webhooks/instagram` with HMAC-SHA256 signature verification |
-| **Discount Code Engine** | Generates unique `WELCOME-XXXXXXXX` codes (32^8 combinations, 30-day expiry) |
+| **Webhook Receiver** | Receives Instagram comment events via `POST /webhooks/instagram` with HMAC-SHA256 signature verification |
+| **Keyword Matcher** | Detects configured trigger keyword in comment text (case-insensitive) |
 | **DM Dispatcher** | Sends welcome messages via Instagram Messenger API with rate limiting (1 msg/sec) |
-| **Validation API** | `GET /api/v1/codes/validate` — e-commerce store verifies codes before checkout |
-| **Redeem API** | `POST /api/v1/codes/redeem` — marks codes as used (idempotent by order_id) |
-| **Processing Worker** | Async BullMQ worker that handles the follow → code → DM flow |
+| **Processing Worker** | Async BullMQ worker that handles the comment → DM flow |
+
+> **Note:** There is no code validation or redemption API. The discount code is a static value shown in the DM that the customer presents verbally or on-screen at the physical establishment.
 
 ### Tech Stack
 
@@ -87,34 +87,10 @@ The API will be available at `http://localhost:3000`.
 POST /webhooks/instagram
 ```
 
-Receives Instagram follow events. Validates HMAC-SHA256 signature, enqueues for async processing.
+Receives Instagram comment events. Validates HMAC-SHA256 signature, checks if comment contains the configured trigger keyword, enqueues for async processing if matched.
 
 **Headers required:**
 - `X-Hub-Signature-256: sha256=<hmac_signature>`
-
-### Code Validation
-
-```
-GET /api/v1/codes/validate?code=WELCOME-XXXXXXXX
-X-API-Key: sk_test_demo_key_12345
-```
-
-Returns whether a discount code is valid, expired, or already redeemed.
-
-### Code Redemption
-
-```
-POST /api/v1/codes/redeem
-X-API-Key: sk_test_demo_key_12345
-
-{
-  "code": "WELCOME-XXXXXXXX",
-  "order_id": "ORD-2026-001",
-  "customer_ip": "203.0.113.45"
-}
-```
-
-Marks a code as redeemed. Idempotent — same `order_id` returns success without side effects.
 
 ### Health Check
 
@@ -132,7 +108,7 @@ pnpm test:watch     # Watch mode
 pnpm test:coverage  # With coverage report
 ```
 
-30 tests cover: HMAC validation, code generation, webhook routes, and codes API.
+Tests cover: HMAC validation, keyword matching, webhook routes, and DM dispatch.
 
 ## Project Structure
 
@@ -143,50 +119,45 @@ src/
 ├── worker.ts                 # BullMQ worker entry point
 ├── config/
 │   ├── env.ts                # Zod-validated environment variables
-│   └── constants.ts          # Business rules and defaults
+│   └── constants.ts          # Business rules and defaults (includes TRIGGER_KEYWORD)
 ├── health/
 │   └── health.ts             # GET /health endpoint
 ├── middleware/
-│   ├── api-key-auth.ts       # API key authentication
 │   ├── error-handler.ts      # Global error handler
 │   └── hmac-validator.ts     # Instagram webhook signature verification
 ├── plugins/
-│   ├── bullmq.ts             # Queue setup (follow + DM queues)
+│   ├── bullmq.ts             # Queue setup (comment + DM queues)
 │   ├── prisma.ts             # Prisma client plugin
 │   └── redis.ts              # Redis connection plugin
 ├── routes/
-│   ├── api/
-│   │   ├── codes.ts          # Validation + redeem endpoints
-│   │   └── codes.schema.ts   # Zod schemas for request validation
 │   └── webhooks/
 │       ├── instagram.ts      # Webhook receiver + verification handshake
 │       └── instagram.schema.ts
 ├── services/
-│   ├── code-engine.ts        # Unique code generation with collision retry
 │   ├── dm-dispatcher.ts      # Instagram Messenger API client
 │   ├── token-manager.ts      # Access token validity management
-│   └── webhook-processor.ts  # Follow event processing logic
+│   └── webhook-processor.ts  # Comment event processing logic
 ├── types/
 │   └── fastify.d.ts          # Fastify instance type augmentation
 └── utils/
-    ├── build-message.ts      # Welcome message template
-    ├── crypto.ts             # HMAC verification + API key hashing
+    ├── build-message.ts      # Welcome message template with static code
+    ├── crypto.ts             # HMAC verification
+    ├── keyword-match.ts      # Case-insensitive keyword detection
     ├── logger.ts             # Pino logger with secret redaction
     └── retry.ts              # Exponential backoff utility
 
 prisma/
-├── schema.prisma             # Database schema (4 models)
+├── schema.prisma             # Database schema (InstagramComment, InstagramFollower, DmRecord, WebhookEvent)
 └── seed.ts                   # Demo data seeding
 
 test/
 ├── fixtures/
 │   └── test-helpers.ts       # Mock Prisma, Redis, Queue
 ├── routes/
-│   ├── api/codes.test.ts     # 12 integration tests
-│   └── webhooks/instagram.test.ts  # 6 integration tests
+│   └── webhooks/instagram.test.ts  # Webhook integration tests
 └── unit/
-    ├── code-engine.test.ts   # 4 unit tests
-    └── hmac-validator.test.ts # 8 unit tests
+    ├── hmac-validator.test.ts # HMAC signature tests
+    └── keyword-match.test.ts # Keyword detection tests
 ```
 
 ## Environment Variables
@@ -198,10 +169,10 @@ test/
 | `INSTAGRAM_PAGE_ACCESS_TOKEN` | Long-lived token (60 days) | — |
 | `INSTAGRAM_WEBHOOK_VERIFY_TOKEN` | Webhook registration token (≥32 chars) | — |
 | `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Corporate account ID | — |
+| `TRIGGER_KEYWORD` | Keyword that triggers DM flow (e.g., "BASUSTA") | `BASUSTA` |
+| `STATIC_DISCOUNT_CODE` | Static discount code shown in DM (e.g., `DESCUENTO_INSTAGRAM`) | — |
 | `DATABASE_URL` | PostgreSQL connection string | — |
 | `REDIS_URL` | Redis connection string | — |
-| `API_KEY_HASH_SECRET` | Salt for API key hashing | — |
-| `STORE_BASE_URL` | E-commerce store URL for CTA links | — |
 | `NODE_ENV` | `development` / `staging` / `production` | `development` |
 | `LOG_LEVEL` | `trace` / `debug` / `info` / `warn` / `error` | `info` |
 | `PORT` | HTTP server port | `3000` |
@@ -209,17 +180,17 @@ test/
 ## Security
 
 - **Webhook signature verification**: HMAC-SHA256 with timing-safe comparison
-- **API key authentication**: Hashed keys stored in DB, validated via middleware
-- **Rate limiting**: Per-IP for webhooks, per-key for API endpoints
+- **Rate limiting**: Per-IP for webhooks (prevents abuse)
 - **Secret redaction**: Sensitive env vars stripped from logs via Pino redact
-- **Idempotent redemption**: Same `order_id` produces identical results, prevents double-charging
+- **Deduplication**: Each user receives only one DM, enforced at the database level
 
 ## Business Rules
 
-- **One code per user**: Each `instagram_user_id` receives exactly one welcome code, regardless of follow/unfollow cycles
-- **Code format**: `WELCOME-[A-Z2-9]{8}` (32-char alphabet, ~1.1 billion combinations)
-- **Expiry**: 30 days from generation
-- **Discount**: 3% single-use
+- **One DM per user**: Each `instagram_user_id` receives exactly one DM, regardless of how many comments they make with the keyword
+- **Keyword trigger**: DM is only sent when the comment contains the configured trigger keyword (e.g., "BASUSTA")
+- **Case-insensitive matching**: "basusta", "BASUSTA", "BasuSta" all trigger the flow
+- **Discount code**: Static code configured via `STATIC_DISCOUNT_CODE` env var (e.g., `DESCUENTO_INSTAGRAM`)
+- **No API validation**: The code is presented verbally or on-screen at the physical establishment — no technical validation exists
 - **DM rate limit**: 1 message per second (Instagram API constraint)
 
 ## Development

@@ -19,10 +19,3 @@ export function verifyInstagramSignature(
   return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 
-/**
- * Hash an API key using SHA-256 with the configured secret.
- * Format: SHA256(secret:plaintext_key)
- */
-export function hashApiKey(key: string, secret: string): string {
-  return createHmac('sha256', secret).update(key).digest('hex');
-}
