@@ -1,11 +1,10 @@
-// DM welcome message template (static code only — no URL)
-export const DM_WELCOME_TEMPLATE = `¡Gracias por seguirnos! 🎉
+// DM message template — sent when a user comments with the trigger keyword.
+// Contains only the static discount code; no store URL.
+export const DM_WELCOME_TEMPLATE = `¡Gracias por tu interés! 🎉
 
 Acá tenés tu código de descuento exclusivo:
 
 🏷️ {CODE}
-
-Usalo en nuestra tienda para obtener un 3% de descuento.
 
 ¡Gracias por ser parte de nuestra comunidad!`;
 
@@ -16,13 +15,6 @@ export const INSTAGRAM_GRAPH_API_BASE = 'https://graph.facebook.com/v21.0';
 export const IG_ERROR_RATE_LIMIT = [4, 613];
 export const IG_ERROR_TOKEN_EXPIRED = 190;
 export const IG_ERROR_PERMISSION_DENIED = [10, 100];
-
-// Rate limiting
-export const WEBHOOK_RATE_LIMIT_MAX = 100;
-export const WEBHOOK_RATE_LIMIT_WINDOW = '1 minute';
-export const API_RATE_LIMIT_MAX_PER_KEY = 100;
-export const API_RATE_LIMIT_MAX_PER_IP = 10;
-export const API_VALIDATE_RATE_LIMIT_MAX = 10;
 
 // Queue defaults
 export const QUEUE_DEFAULT_ATTEMPTS = 3;
