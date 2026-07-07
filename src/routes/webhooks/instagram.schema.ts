@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Webhook payload schema — Instagram follows event
+// Webhook payload schema — Instagram comments event
 export const WebhookPayloadSchema = z.object({
   object: z.literal('instagram'),
   entry: z.array(
@@ -9,10 +9,19 @@ export const WebhookPayloadSchema = z.object({
       time: z.number(),
       changes: z.array(
         z.object({
-          field: z.literal('follows'),
+          field: z.literal('comments'),
           value: z.object({
-            from: z.object({
+            media: z.object({
               id: z.string().min(1),
+            }),
+            comment: z.object({
+              id: z.string().min(1),
+              created_time: z.number(),
+              text: z.string().min(1),
+              from: z.object({
+                id: z.string().min(1),
+                username: z.string().optional(),
+              }),
             }),
           }),
         }),

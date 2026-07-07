@@ -10,6 +10,9 @@ export const COMMENT_QUEUE_NAME = 'instagram-comment';
 
 export interface CommentEventJob {
   instagramUserId: string;
+  commentText: string;
+  commentId: string;
+  mediaId?: string;
   rawPayload: Record<string, unknown>;
   webhookEventId: string;
 }
