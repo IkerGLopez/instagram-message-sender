@@ -19,22 +19,23 @@ export async function legalRoutes(app: FastifyInstance) {
         <p><strong>Última actualización:</strong> ${new Date().toISOString().split('T')[0]}</p>
         
         <h2>1. Introducción</h2>
-        <p>Esta política de privacidad describe cómo recopilamos, usamos y compartimos tu información personal cuando interactúas con nuestra aplicación de Instagram para la gestión de clientes de Camping Zumaia.</p>
+        <p>Esta política de privacidad describe cómo recopilamos, usamos y compartimos tu información personal cuando interactúas con nuestra aplicación de Instagram para el envío automático de mensajes a usuarios que comentan en nuestras publicaciones.</p>
         
         <h2>2. Información que Recopilamos</h2>
-        <p>Recopilamos la siguiente información cuando un usuario sigue nuestra cuenta de Instagram:</p>
+        <p>Recopilamos la siguiente información cuando un usuario comenta en nuestras publicaciones con el keyword de activación:</p>
         <ul>
           <li>ID de usuario de Instagram (identificador anónimo)</li>
-          <li>Fecha y hora del seguimiento</li>
-          <li>Estado de los códigos de descuento generados</li>
+          <li>Contenido del comentario</li>
+          <li>Fecha y hora del comentario</li>
+          <li>Estado de los mensajes de descuento enviados</li>
         </ul>
         
         <h2>3. Uso de la Información</h2>
         <p>Utilizamos tu información para:</p>
         <ul>
-          <li>Enviar mensajes de bienvenida automatizados</li>
-          <li>Generar y gestionar códigos de descuento exclusivos</li>
-          <li>Mejorar nuestra comunicación con seguidores</li>
+          <li>Enviar mensajes de bienvenida automatizados con código de descuento</li>
+          <li>Gestionar la comunicación con usuarios interesados</li>
+          <li>Mejorar nuestra interacción con la comunidad</li>
         </ul>
         
         <h2>4. Compartición de Datos</h2>
@@ -74,7 +75,7 @@ export async function legalRoutes(app: FastifyInstance) {
         <p>Al interactuar con nuestra aplicación de Instagram, aceptas estos términos de servicio en su totalidad.</p>
         
         <h2>2. Descripción del Servicio</h2>
-        <p>Ofrecemos un sistema automatizado que envía mensajes de bienvenida y códigos de descuento a nuevos seguidores de nuestra cuenta de Instagram.</p>
+        <p>Ofrecemos un sistema automatizado que envía mensajes con códigos de descuento a usuarios que comentan en nuestras publicaciones con un keyword específico.</p>
         
         <h2>3. Códigos de Descuento</h2>
         <ul>

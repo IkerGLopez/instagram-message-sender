@@ -49,8 +49,15 @@ const payload = JSON.stringify({
       time: Math.floor(Date.now() / 1000),
       changes: [
         {
-          field: 'follows',
-          value: { from: { id: userId } },
+          field: 'comments',
+          value: {
+            comment: {
+              id: '1001',
+              text: '¡BASUSTA! Me encanta este lugar',
+              from: { id: userId },
+            },
+            media: { id: '2001' },
+          },
         },
       ],
     },

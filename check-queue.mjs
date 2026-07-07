@@ -8,7 +8,7 @@ const redis = new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: 1 });
 redis.on('ready', async () => {
   console.log('Redis connected\n');
 
-  const patterns = ['*follow*', '*bull*', '*dm*'];
+  const patterns = ['*comment*', '*bull*', '*dm*'];
   for (const pattern of patterns) {
     const keys = await redis.keys(pattern);
     if (keys.length > 0) {
@@ -37,19 +37,19 @@ redis.on('ready', async () => {
   }
 
   // Check for jobs in the wait list specifically
-  const waitLen = await redis.llen('bull:follow-queue:wait');
-  const activeLen = await redis.zcard('bull:follow-queue:active');
-  const delayedLen = await redis.zcard('bull:follow-queue:delayed');
-  const pausedLen = await redis.llen('bull:follow-queue:paused');
+  const waitLen = await redis.llen('bull:comment-queue:wait');
+  const activeLen = await redis.zcard('bull:comment-queue:active');
+  const delayedLen = await redis.zcard('bull:comment-queue:delayed');
+  const pausedLen = await redis.llen('bull:comment-queue:paused');
 
-  console.log('\n--- Follow Queue Status ---');
+  console.log('\n--- Comment Queue Status ---');
   console.log(`  Waiting:  ${waitLen}`);
   console.log(`  Active:   ${activeLen}`);
   console.log(`  Delayed:  ${delayedLen}`);
   console.log(`  Paused:   ${pausedLen}`);
 
   if (waitLen > 0) {
-    const jobs = await redis.lrange('bull:follow-queue:wait', 0, -1);
+    const jobs = await redis.lrange('bull:comment-queue:wait', 0, -1);
     console.log('\n  Waiting jobs:');
     for (const j of jobs) {
       const parsed = JSON.parse(j);

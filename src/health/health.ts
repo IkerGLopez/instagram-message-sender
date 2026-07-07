@@ -49,21 +49,21 @@ export async function healthRoute(app: FastifyInstance) {
 
     // Check queue health (failed job count)
     try {
-      const followQueue = (app as any).followQueue;
+      const commentQueue = (app as any).commentQueue;
       const dmQueue = (app as any).dmQueue;
 
-      const followFailedCount = await followQueue.getFailedCount();
+      const commentFailedCount = await commentQueue.getFailedCount();
       const dmFailedCount = await dmQueue.getFailedCount();
 
       health.queues = {
         status:
-          followFailedCount + dmFailedCount > HEALTH_FAILED_JOBS_THRESHOLD
+          commentFailedCount + dmFailedCount > HEALTH_FAILED_JOBS_THRESHOLD
             ? 'warning'
             : 'ok',
-        detail: `follow-queue: ${followFailedCount} failed, dm-queue: ${dmFailedCount} failed`,
+        detail: `comment-queue: ${commentFailedCount} failed, dm-queue: ${dmFailedCount} failed`,
       };
 
-      if (followFailedCount + dmFailedCount > HEALTH_FAILED_JOBS_THRESHOLD) {
+      if (commentFailedCount + dmFailedCount > HEALTH_FAILED_JOBS_THRESHOLD) {
         overallStatus = 'warning';
       }
     } catch (error) {
