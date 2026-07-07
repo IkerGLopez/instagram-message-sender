@@ -4,7 +4,7 @@ import { createHmac } from 'crypto';
 import { buildApp } from '../../src/app.js';
 import { env } from '../../src/config/env.js';
 import {
-  validFollowPayload,
+  validCommentPayload,
   invalidSignaturePayload,
   malformedPayload,
 } from '../fixtures/webhook-payloads.js';
@@ -16,7 +16,7 @@ function generateSignature(body: string, secret: string): string {
   return `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`;
 }
 
-describe('POST /webhooks/instagram', () => {
+describe('POST /webhooks/instagram (comment flow)', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
   let request: supertest.SuperTest<supertest.Test>;
 
@@ -30,8 +30,8 @@ describe('POST /webhooks/instagram', () => {
     await app.close();
   });
 
-  it('returns 200 for a valid signature and payload', async () => {
-    const body = JSON.stringify(validFollowPayload);
+  it('returns 200 for a valid comment payload with keyword', async () => {
+    const body = JSON.stringify(validCommentPayload);
     const signature = generateSignature(body, HMAC_SECRET);
 
     const response = await request
@@ -61,7 +61,7 @@ describe('POST /webhooks/instagram', () => {
     expect(response.status).toBe(403);
   });
 
-  it('returns 400 for a malformed payload', async () => {
+  it('returns 200 for a malformed payload (ACK to Instagram)', async () => {
     const body = JSON.stringify(malformedPayload);
     const signature = generateSignature(body, HMAC_SECRET);
 
