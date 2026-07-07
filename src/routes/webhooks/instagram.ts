@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { env } from '../../config/env.js';
 import { WebhookHandshakeSchema, WebhookPayloadSchema } from './instagram.schema.js';
+import { matchesKeyword } from '../../utils/keyword-match.js';
 import { logger } from '../../utils/logger.js';
 
 export async function instagramWebhookRoutes(app: FastifyInstance) {
@@ -74,7 +75,7 @@ export async function instagramWebhookRoutes(app: FastifyInstance) {
         try {
           await (app as any).prisma.webhookEvent.create({
             data: {
-              eventType: 'follows_invalid',
+              eventType: 'comments_invalid',
               rawPayload: body,
               processingStatus: 'FAILED',
               errorMessage: 'Malformed payload',
@@ -87,45 +88,83 @@ export async function instagramWebhookRoutes(app: FastifyInstance) {
         return reply.code(200).send({ received: true });
       }
 
-      // Extract follow events and enqueue each
-      const followQueue = (app as any).followQueue;
+      const commentQueue = (app as any).commentQueue;
       const prisma = (app as any).prisma;
 
       for (const entry of parsed.data.entry) {
         for (const change of entry.changes) {
-          if (change.field === 'follows' || change.field === 'follow') {
-            const instagramUserId = change.value.from.id;
+          const { comment, media } = change.value;
+          const instagramUserId = comment.from.id;
+          const commentText = comment.text;
+          const commentId = comment.id;
+          const mediaId = media.id;
 
-            // Create webhook event record first
-            const webhookEvent = await prisma.webhookEvent.create({
-              data: {
-                eventType: 'follows',
-                rawPayload: { entry: [entry] },
-                processingStatus: 'PENDING',
-                instagramUserId,
-              },
-            });
-
-            // Enqueue for processing
-            await followQueue.add(
-              'follow-event',
-              {
-                instagramUserId,
-                rawPayload: { entry: [entry] },
-                webhookEventId: webhookEvent.id,
-              },
-              {
-                jobId: `follow-${instagramUserId}-${webhookEvent.id}`,
-                removeOnComplete: { age: 3600, count: 100 },
-                removeOnFail: { age: 86400 },
-              },
-            );
-
+          // Keyword matching gate — discard non-matching comments
+          if (!matchesKeyword(commentText, env.TRIGGER_KEYWORD)) {
             logger.info(
-              { instagramUserId, webhookEventId: webhookEvent.id },
-              'Follow event enqueued',
+              { instagramUserId, commentId, commentText },
+              'Comment skipped — keyword not matched',
             );
+            continue;
           }
+
+          // Upsert InstagramComment record
+          await prisma.instagramComment.upsert({
+            where: { commentId },
+            update: { commentText },
+            create: {
+              commentId,
+              instagramUserId,
+              mediaId,
+              commentText,
+            },
+          });
+
+          // Dedup check — one DM per user
+          const existingDm = await prisma.dmRecord.findFirst({
+            where: { instagramUserId },
+          });
+
+          if (existingDm) {
+            logger.info(
+              { instagramUserId, commentId },
+              'Comment skipped — DM already sent to this user',
+            );
+            continue;
+          }
+
+          // Create webhook event record
+          const webhookEvent = await prisma.webhookEvent.create({
+            data: {
+              eventType: 'comments',
+              rawPayload: { entry: [entry] },
+              processingStatus: 'PENDING',
+              instagramUserId,
+            },
+          });
+
+          // Enqueue for processing
+          await commentQueue.add(
+            'comment-event',
+            {
+              instagramUserId,
+              commentText,
+              commentId,
+              mediaId,
+              rawPayload: { entry: [entry] },
+              webhookEventId: webhookEvent.id,
+            },
+            {
+              jobId: `comment-${instagramUserId}-${webhookEvent.id}`,
+              removeOnComplete: { age: 3600, count: 100 },
+              removeOnFail: { age: 86400 },
+            },
+          );
+
+          logger.info(
+            { instagramUserId, commentId, webhookEventId: webhookEvent.id },
+            'Comment event enqueued',
+          );
         }
       }
 
