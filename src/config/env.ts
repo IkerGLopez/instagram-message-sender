@@ -15,8 +15,8 @@ const envSchema = z.object({
   // Redis
   REDIS_URL: z.string().url(),
 
-  // API Key
-  API_KEY_HASH_SECRET: z.string().min(1),
+  // Trigger keyword for comment matching
+  TRIGGER_KEYWORD: z.string().min(1),
 
   // Static discount code (required)
   STATIC_DISCOUNT_CODE: z.string().min(1),
