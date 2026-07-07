@@ -10,6 +10,8 @@ export const DM_QUEUE_NAME = 'instagram-dm';
 
 export interface DmDispatchJob {
   instagramUserId: string;
+  commentId?: string;
+  mediaId?: string;
 }
 
 export function createDmQueue(connection: Redis) {
