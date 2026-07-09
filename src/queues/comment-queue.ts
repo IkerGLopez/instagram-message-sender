@@ -13,6 +13,7 @@ export interface CommentEventJob {
   commentText: string;
   commentId: string;
   mediaId?: string;
+  createdTime: number;
   rawPayload: Record<string, unknown>;
   webhookEventId: string;
 }

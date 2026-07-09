@@ -18,11 +18,11 @@ enum WebhookProcessingStatus {
 }
 
 model InstagramFollower {
-  id              String    @id @default(uuid()) @map("id")
+  id              String    @id @default(uuid()) @map("id") @db.Uuid
   instagramUserId String    @unique @map("instagram_user_id") @db.VarChar(64)
   followedAt      DateTime  @default(now()) @map("followed_at") @db.Timestamptz
   unfollowedAt    DateTime? @map("unfollowed_at") @db.Timestamptz
-  followCount     Int       @default(0) @map("follow_count")
+  followCount     Int       @default(1) @map("follow_count")
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -31,7 +31,7 @@ model InstagramFollower {
 }
 
 model InstagramComment {
-  id              String   @id @default(uuid()) @map("id")
+  id              String   @id @default(uuid()) @map("id") @db.Uuid
   commentId       String   @unique @map("comment_id") @db.VarChar(64)
   instagramUserId String   @map("instagram_user_id") @db.VarChar(64)
   mediaId         String?  @map("media_id") @db.VarChar(64)
@@ -46,23 +46,23 @@ model InstagramComment {
 }
 
 model DmRecord {
-  id              String   @id @default(uuid()) @map("id")
+  id              String   @id @default(uuid()) @map("id") @db.Uuid
   instagramUserId String   @unique @map("instagram_user_id") @db.VarChar(64)
   commentId       String?  @map("comment_id") @db.VarChar(64)
   mediaId         String?  @map("media_id") @db.VarChar(64)
   discountCode    String   @map("discount_code") @db.VarChar(64)
-  dmMessageId     String?  @map("dm_message_id") @db.VarChar(128)
-  dmSentAt        DateTime @default(now()) @map("dm_sent_at") @db.Timestamptz
+  dmMessageId       String?   @map("dm_message_id") @db.VarChar(128)
+  dmSendAttemptedAt DateTime? @map("dm_send_attempted_at") @db.Timestamptz
+  dmSentAt          DateTime? @map("dm_sent_at") @db.Timestamptz
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("dm_records")
-  @@index([instagramUserId])
   @@index([dmSentAt])
 }
 
 model WebhookEvent {
-  id               String                   @id @default(uuid()) @map("id")
+  id               String                   @id @default(uuid()) @map("id") @db.Uuid
   eventType        String                   @map("event_type") @db.VarChar(64)
   rawPayload       Json                     @map("raw_payload")
   processingStatus WebhookProcessingStatus  @default(PENDING) @map("processing_status")
@@ -73,6 +73,6 @@ model WebhookEvent {
 
   @@map("webhook_events")
   @@index([processingStatus])
-  @@index([receivedAt])
+  @@index([receivedAt(sort: Desc)])
   @@index([instagramUserId])
 }

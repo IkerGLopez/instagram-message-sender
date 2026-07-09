@@ -81,6 +81,10 @@ const dmWorker = new Worker(
   {
     connection: redis,
     concurrency: 1,
+    limiter: {
+      max: 1,
+      duration: 1000,
+    },
   },
 );
 

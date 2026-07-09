@@ -53,6 +53,7 @@ const payload = JSON.stringify({
           value: {
             comment: {
               id: '1001',
+              created_time: Math.floor(Date.now() / 1000),
               text: '¡BASUSTA! Me encanta este lugar',
               from: { id: userId },
             },

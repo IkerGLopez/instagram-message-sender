@@ -79,7 +79,10 @@ export async function legalRoutes(app: FastifyInstance) {
         
         <h2>3. Códigos de Descuento</h2>
         <ul>
+          <li>El código otorga un 3% de descuento</li>
+          <li>El código no tiene fecha de expiración</li>
           <li>El código de descuento es fijo: se comunica exclusivamente vía DM</li>
+          <li>El código es un contrato escrito extraoficial que se presenta en el establecimiento físico</li>
           <li>No es transferible ni canjeable por efectivo</li>
           <li>Se aplica únicamente presentando el código en nuestro establecimiento físico</li>
         </ul>

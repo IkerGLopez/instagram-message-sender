@@ -17,10 +17,6 @@ export interface DmDispatchJob {
 export function createDmQueue(connection: Redis) {
   return new Queue(DM_QUEUE_NAME, {
     connection,
-    limiter: {
-      max: 1,
-      duration: 1000,
-    },
     defaultJobOptions: {
       attempts: QUEUE_DEFAULT_ATTEMPTS,
       backoff: {

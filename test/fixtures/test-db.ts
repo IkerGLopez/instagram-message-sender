@@ -54,7 +54,7 @@ export async function clearTestDb(db: PrismaClient): Promise<void> {
   });
 
   // Truncate all tables
-  const tables = ['DmRecord', 'InstagramComment', 'InstagramFollower', 'WebhookEvent'];
+  const tables = ['dm_records', 'instagram_comments', 'instagram_followers', 'webhook_events'];
   for (const table of tables) {
     await db.$executeRawUnsafe(`DELETE FROM "${table}"`).catch(() => {
       // table may not exist in test DB schema yet

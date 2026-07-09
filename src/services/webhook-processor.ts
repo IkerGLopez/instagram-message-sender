@@ -7,6 +7,7 @@ export interface CommentEventData {
   commentText: string;
   commentId: string;
   mediaId?: string;
+  createdTime: number;
   rawPayload: Record<string, unknown>;
   webhookEventId: string;
 }
@@ -23,10 +24,10 @@ export class WebhookProcessor {
    * 2. Enqueue DM job
    */
   async processCommentEvent(data: CommentEventData): Promise<void> {
-    const { instagramUserId, commentText, commentId, mediaId, webhookEventId } =
+    const { instagramUserId, commentText, commentId, mediaId, createdTime, webhookEventId } =
       data;
 
-    // Upsert comment record
+    // Upsert comment record — use actual comment.created_time, not server processing time
     await this.db.instagramComment.upsert({
       where: { commentId },
       update: { commentText },
@@ -35,20 +36,12 @@ export class WebhookProcessor {
         instagramUserId,
         mediaId: mediaId ?? null,
         commentText,
+        commentedAt: new Date(createdTime * 1000),
       },
     });
 
-    // Update webhook event as processed
-    await this.db.webhookEvent.update({
-      where: { id: webhookEventId },
-      data: {
-        processingStatus: 'PROCESSED',
-        processedAt: new Date(),
-        instagramUserId,
-      },
-    });
-
-    // Enqueue DM dispatch job
+    // Enqueue DM dispatch job BEFORE marking event as PROCESSED.
+    // If enqueue fails, event stays PENDING and will be retried.
     await this.dmQueue.add(
       'dm-dispatch',
       { instagramUserId, commentId, mediaId },
@@ -58,6 +51,16 @@ export class WebhookProcessor {
         removeOnFail: { age: 86400 },
       },
     );
+
+    // Update webhook event as processed — only after DM is successfully enqueued
+    await this.db.webhookEvent.update({
+      where: { id: webhookEventId },
+      data: {
+        processingStatus: 'PROCESSED',
+        processedAt: new Date(),
+        instagramUserId,
+      },
+    });
 
     logger.info(
       { instagramUserId, commentId },

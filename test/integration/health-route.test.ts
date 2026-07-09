@@ -38,8 +38,8 @@ describe('GET /health', () => {
       const { services } = response.body;
       expect(services).toHaveProperty('database');
       expect(services).toHaveProperty('redis');
-      expect(services).toHaveProperty('instagram_token');
-      expect(services).toHaveProperty('queues');
+      expect(services).toHaveProperty('instagram_token_valid');
+      expect(services).toHaveProperty('instagram_token_expires_in_days');
     }
   });
 });
